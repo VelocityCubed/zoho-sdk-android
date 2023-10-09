@@ -13,6 +13,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "zoho-test-app"
+rootProject.name = "Zoho SDK"
 include ':app'
-include ':zoho-sdk'
+include ':ZohoSDK'
+include ':sample', ':library'
