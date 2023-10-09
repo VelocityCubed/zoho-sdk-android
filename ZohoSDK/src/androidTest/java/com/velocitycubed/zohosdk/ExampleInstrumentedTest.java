@@ -1,4 +1,4 @@
-package com.example.zoho_sdk;
+package com.velocitycubed.zohosdk;
 
 import android.content.Context;
 
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
     public void useAppContext() {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
-        assertEquals("com.example.zoho_sdk.test", appContext.getPackageName());
+        assertEquals("com.velocitycubed.zohosdk.test", appContext.getPackageName());
     }
 }

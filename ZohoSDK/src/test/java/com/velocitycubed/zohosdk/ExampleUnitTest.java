@@ -1,4 +1,4 @@
-package com.example.zoho_sdk;
+package com.velocitycubed.zohosdk;
 
 import org.junit.Test;
 
