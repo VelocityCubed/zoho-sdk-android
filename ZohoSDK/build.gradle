@@ -3,22 +3,16 @@ plugins {
     id 'maven-publish'
 }
 
-// apply from: 'maven-push.gradle'
-// apply plugin: 'java'
-
 publishing {
   publications {
     mavenJava(MavenPublication) {
-      //from components.java
-
       groupId = 'com.velocity.zoho-sdk'
       artifactId = 'zoho-sdk'
       version = '0.1.0'
 
-      // Include additional metadata if needed
-      // pom.withXml {
-      //     ...
-      // }
+//        afterEvaluate {
+//            from components.release
+//        }
     }
   }
 
