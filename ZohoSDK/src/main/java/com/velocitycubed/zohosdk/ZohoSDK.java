@@ -42,9 +42,9 @@ public class ZohoSDK {
     private static final String EVENT_TOKEN_QueuePositionChange = "ZOHO_QueuePositionChange";
 
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
-    private Activity activity;
+    private final ThreadLocal<Activity> activity = new ThreadLocal<>();
 
-    private List<ZohoEventListener> chatListeners = new ArrayList<>();
+    private final List<ZohoEventListener> chatListeners = new ArrayList<>();
 
     public void addChatViewOpenListener(ZohoEventListener listener) {
         chatListeners.add(listener);
@@ -55,7 +55,7 @@ public class ZohoSDK {
     }
 
     public void initialize(Application application, Activity activity, String appKey, String accessKey) {
-        this.activity = activity;
+        this.activity.set(activity);
         InitConfig initConfig = new InitConfig();
 
         if (!ZohoSalesIQ.isSDKEnabled()) {

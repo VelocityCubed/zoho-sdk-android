@@ -4,8 +4,8 @@ import android.app.Application;
 import android.content.res.Resources;
 import android.util.Log;
 
-import com.zoho.salesiqembed.ZohoSalesIQ;
 import com.zoho.livechat.android.ZohoLiveChat;
+import com.zoho.salesiqembed.ZohoSalesIQ;
 
 import org.json.JSONArray;
 import org.json.JSONException;
