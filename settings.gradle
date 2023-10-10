@@ -10,6 +10,12 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        maven {
+            url 'https://maven.zohodl.com'
+            content {
+                includeGroup "com.zoho.salesiq"
+            }
+        }
     }
 }
 
