@@ -2,11 +2,9 @@ package com.velocitycubed.zohosdk;
 
 import android.app.Activity;
 import android.app.Application;
-import android.text.Html;
 import android.os.Handler;
 import android.os.Looper;
-
-import androidx.annotation.NonNull;
+import android.text.Html;
 
 import com.zoho.commons.InitConfig;
 import com.zoho.commons.LauncherModes;
@@ -14,7 +12,6 @@ import com.zoho.commons.LauncherProperties;
 import com.zoho.commons.OnInitCompleteListener;
 import com.zoho.livechat.android.SIQDepartment;
 import com.zoho.livechat.android.VisitorChat;
-import com.zoho.livechat.android.ZohoLiveChat;
 import com.zoho.livechat.android.constants.ConversationType;
 import com.zoho.livechat.android.listeners.ConversationListener;
 import com.zoho.livechat.android.listeners.DepartmentListener;
@@ -47,14 +44,14 @@ public class ZohoSDK {
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private Activity activity;
 
-    private List<ChatViewOpenListener> chatViewOpenListeners = new ArrayList<>();
+    private List<ZohoEventListener> chatListeners = new ArrayList<>();
 
-    public void addChatViewOpenListener(ChatViewOpenListener listener) {
-        chatViewOpenListeners.add(listener);
+    public void addChatViewOpenListener(ZohoEventListener listener) {
+        chatListeners.add(listener);
     }
 
-    public void removeChatViewOpenListener(ChatViewOpenListener listener) {
-        chatViewOpenListeners.remove(listener);
+    public void removeChatViewOpenListener(ZohoEventListener listener) {
+        chatListeners.remove(listener);
     }
 
     public void initialize(Application application, Activity activity, String appKey, String accessKey) {
@@ -69,7 +66,6 @@ public class ZohoSDK {
 
                 @Override
                 public void onInitError() {
-                    // Handle Zoho Initialize error
                 }
             }, new InitListener() {
                 @Override
@@ -89,66 +85,127 @@ public class ZohoSDK {
                                 } catch (JSONException e) {
                                     e.printStackTrace();
                                 }
-                                // Notify all registered listeners
-                                for (ChatViewOpenListener listener : chatViewOpenListeners) {
-                                    listener.onChatViewOpen(data);
+
+                                for (ZohoEventListener listener : chatListeners) {
+                                    listener.onEvent(EVENT_TOKEN_ChatViewOpen, data);
                                 }
                             });
                         }
 
                         @Override
-                        public void handleChatViewClose(String chatId) {
+                        public void handleChatViewClose(String s) {
+                            mainHandler.post(() -> {
+                                JSONObject data = new JSONObject();
+                                try {
+                                    data.put("chatId", s);
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
 
+                                for (ZohoEventListener listener : chatListeners) {
+                                    listener.onEvent(EVENT_TOKEN_ChatViewClose, data);
+                                }
+
+                                showZohoLauncher();
+                            });
                         }
 
                         @Override
                         public void handleChatOpened(VisitorChat visitorChat) {
+                            mainHandler.post(() -> {
+                                JSONObject data = parseVisitorChatToJSONObject(visitorChat);
 
+                                for (ZohoEventListener listener : chatListeners) {
+                                    listener.onEvent(EVENT_TOKEN_ChatOpened ,data);
+                                }
+                            });
                         }
 
                         @Override
                         public void handleChatClosed(VisitorChat visitorChat) {
+                            mainHandler.post(() -> {
+                                JSONObject data = parseVisitorChatToJSONObject(visitorChat);
 
+                                for (ZohoEventListener listener : chatListeners) {
+                                    listener.onEvent(EVENT_TOKEN_ChatClosed, data);
+                                }
+
+                                showZohoLauncher();
+                            });
                         }
 
                         @Override
                         public void handleChatAttended(VisitorChat visitorChat) {
+                            mainHandler.post(() -> {
+                                JSONObject data = parseVisitorChatToJSONObject(visitorChat);
 
+                                for (ZohoEventListener listener : chatListeners) {
+                                    listener.onEvent(EVENT_TOKEN_ChatAttended, data);
+                                }
+                            });
                         }
 
                         @Override
                         public void handleChatMissed(VisitorChat visitorChat) {
+                            mainHandler.post(() -> {
+                                JSONObject data = parseVisitorChatToJSONObject(visitorChat);
 
+                                for (ZohoEventListener listener : chatListeners) {
+                                    listener.onEvent(EVENT_TOKEN_ChatMissed,data);
+                                }
+                            });
                         }
 
                         @Override
                         public void handleChatReOpened(VisitorChat visitorChat) {
+                            mainHandler.post(() -> {
+                                JSONObject data = parseVisitorChatToJSONObject(visitorChat);
 
+                                for (ZohoEventListener listener : chatListeners) {
+                                    listener.onEvent(EVENT_TOKEN_ChatReOpened, data);
+                                }
+                            });
                         }
 
                         @Override
                         public void handleRating(VisitorChat visitorChat) {
+                            mainHandler.post(() -> {
+                                JSONObject data = parseVisitorChatToJSONObject(visitorChat);
 
+                                for (ZohoEventListener listener : chatListeners) {
+                                    listener.onEvent(EVENT_TOKEN_Rating, data);
+                                }
+                            });
                         }
 
                         @Override
                         public void handleFeedback(VisitorChat visitorChat) {
+                            mainHandler.post(() -> {
+                                JSONObject data = parseVisitorChatToJSONObject(visitorChat);
 
+                                for (ZohoEventListener listener : chatListeners) {
+                                    listener.onEvent(EVENT_TOKEN_Feedback, data);
+                                }
+                            });
                         }
 
                         @Override
                         public void handleQueuePositionChange(VisitorChat visitorChat) {
+                            mainHandler.post(() -> {
+                                JSONObject data = parseVisitorChatToJSONObject(visitorChat);
 
+                                for (ZohoEventListener listener : chatListeners) {
+                                    listener.onEvent(EVENT_TOKEN_QueuePositionChange, data);
+                                }
+                            });
+                            // Call showZohoLauncher
+                            showZohoLauncher();
                         }
-
-                        // Implement other SalesIQChatListener methods similarly
-
                     });
                 }
 
                 @Override
                 public void onInitError(int i, String s) {
-                    // Handle Zoho Initialize error with details
                 }
             }, initConfig);
         }
@@ -244,6 +301,34 @@ public class ZohoSDK {
             }
         });
     }
+
+    private JSONObject parseVisitorChatToJSONObject(VisitorChat visitorChat) {
+        JSONObject data = new JSONObject();
+        try {
+            data.put("chatId", visitorChat.getChatID());
+            data.put("question", visitorChat.getQuestion());
+            data.put("attenderName", visitorChat.getAttenderName());
+            data.put("attenderEmail", visitorChat.getAttenderEmail());
+            data.put("attenderId", visitorChat.getAttenderId());
+
+            data.put("isBotAttender", visitorChat.isBotAttender());
+            data.put("departmentName", visitorChat.getDepartmentName());
+            data.put("chatStatus", visitorChat.getChatStatus());
+            data.put("unreadCount", visitorChat.getUnreadCount());
+            data.put("feedback", visitorChat.getFeedbackMessage());
+
+            data.put("rating", visitorChat.getRating());
+            data.put("lastMessage", visitorChat.getLastMessage());
+            data.put("lastMessageTime", visitorChat.getLastMessageTime());
+            data.put("lastMessageSender", visitorChat.getLastMessageSender());
+            data.put("queuePosition", visitorChat.getQueuePosition());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        return data;
+    }
+
 
     private ArrayList<VisitorChat> removeWaitingMissed(List<VisitorChat> chats) {
         ListIterator<VisitorChat> data = chats.listIterator();
